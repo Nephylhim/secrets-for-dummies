@@ -17,10 +17,10 @@ Layout:
   no salt, hashcat's `sha512:iterations:salt:hash` format) and cracking
   (`crack-hashes.sh`, mode `-m 12100`).
 
-Each `*/hashes.txt` (or `md5.hash`) file is generated output, not hand-written;
-regenerate it by re-running the corresponding `hash-command.sh` /
-`sha512-command.sh` / `pbkdf2-command.sh` script. `*/cracked.txt` is also
-generated output from `crack-hashes.sh` and safe to delete/regenerate.
+Each `*/hashes.txt` file is generated output, not hand-written; regenerate it
+by re-running the corresponding `hash-command.sh` / `sha512-command.sh` /
+`pbkdf2-command.sh` script. `*/cracked.txt` is also generated output from
+`crack-hashes.sh` and safe to delete/regenerate.
 
 ## Environment
 
@@ -83,6 +83,11 @@ Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
   (`hash` → `*-command.sh`, `crack` → `crack-hashes.sh`) plus a `clean`
   recipe (`rm -f cracked.txt`); keep recipe names consistent across
   directories and update it if a script is renamed.
+- hashcat keeps a potfile of previously cracked hashes and skips re-cracking
+  them, so `-o`/`--outfile` only captures *newly* found hashes in that
+  session. `crack-hashes.sh` always finishes with `hashcat --show -o
+  cracked.txt` (after `rm -f cracked.txt`) so `cracked.txt` is complete even
+  when every hash was already in the potfile from a previous run.
 
 ## Scope / ethics
 
