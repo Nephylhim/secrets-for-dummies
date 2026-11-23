@@ -527,7 +527,7 @@ Démo live (`02-sha512/`).
 - Ils tombent tous dans les *premières secondes* d'une attaque par dictionnaire
 
 #v(1fr)
-#text(size: 12pt)[Sources : NordPass 2025 (via #link("https://devolutions.net/blog/most-common-passwords-of-2025-the-more-things-change-the-more-they-stay-the-same/")[Devolutions]) ; #link("https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/2025-199_most_used_passwords.txt")[SecLists, 2025-199_most_used_passwords] ; #link("https://md5hashonline.com/most-common-passwords/")[md5hashonline.com] (liste RockYou, 14,3 M de mots de passe)]
+#text(size: 12pt)[Sources : NordPass 2025 (via #link("https://devolutions.net/blog/most-common-passwords-of-2025-the-more-things-change-the-more-they-stay-the-same/")[Devolutions]) ; #link("https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/2025-199_most_used_passwords.txt")[SecLists, 2025-199_most_used_passwords] ; #link("https://md5hashonline.com/most-common-passwords/")[md5hashonline.com] (liste RockYou : fuite de décembre 2009, 14,3 M de mots de passe uniques)]
 
 == 2.9 - Force brute et entropie
 
@@ -555,7 +555,20 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Vitesses : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6 sur RTX 4090]]
 
-== 2.10 - Poivre
+== 2.10 - Longueur plutôt que complexité
+
+#align(center)[
+  #image("rsc/xkcd-936-password-strength.png", height: 80%)
+]
+
+#v(1fr)
+#text(size: 14pt)[Source : #link("https://xkcd.com/936/")[xkcd 936, _Password Strength_] (Randall Munroe, CC BY-NC 2.5)]
+
+#speaker-note[
+  Une phrase de passe de plusieurs mots aléatoires est plus facile à retenir et plus longue qu'un mot court avec des substitutions (P\@ssw0rd), donc plus résistante à la force brute.
+]
+
+== 2.11 - Poivre
 
 - Secret *commun*, jamais stocké avec la BDD
 - Stockage possible : secret manager (ex : Vault), variables d'environnement, code
@@ -581,7 +594,7 @@ Démo live (`02-sha512/`).
   #mono(size: 0.8em)[hash(mot de passe + sel + poivre)]
 ]
 
-== 2.11 - Poivre : exemple et rotation
+== 2.12 - Poivre : exemple et rotation
 
 #set text(size: 0.85em)
 - Deux stratégies (OWASP) :
@@ -607,7 +620,7 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Peppering)]
 
-== 2.12 - Comparaison en temps constant
+== 2.13 - Comparaison en temps constant
 
 - Comparer deux hashs avec `==` s'arrête au *premier octet différent* : le temps de réponse fuit de l'information (*timing attack*)
 - Utiliser une comparaison *en temps constant*
@@ -623,7 +636,7 @@ Démo live (`02-sha512/`).
   )
 ]
 
-== 2.13 - Migrer d'anciens hashs
+== 2.14 - Migrer d'anciens hashs
 
 - Cas réel : une BDD en MD5 ou SHA-1, qu'on veut faire passer à Argon2id
 - On ne peut pas convertir un hash : il faut le mot de passe en clair
@@ -640,7 +653,7 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Upgrading Legacy Hashes)]
 
-== 2.14 - Attaques en ligne et hors ligne
+== 2.15 - Attaques en ligne et hors ligne
 
 - *Hors ligne* : l'attaquant a la BDD et teste à l'infini sur son GPU : seul le hash lent protège
 - *En ligne* : l'attaquant passe par le formulaire de connexion, et on peut le freiner
@@ -648,7 +661,7 @@ Démo live (`02-sha512/`).
   - *MFA* : un mot de passe volé ne suffit plus
   - Détecter le *credential stuffing* (mots de passe réutilisés issus d'autres fuites)
 
-== 2.15 - Refuser les mots de passe déjà fuités
+== 2.16 - Refuser les mots de passe déjà fuités
 
 - *Pwned Passwords* (HIBP) : des centaines de millions de mots de passe issus de fuites, interrogeables par API
 - *k-anonymity* : on envoie seulement les *5 premiers caractères* du SHA-1, jamais le mot de passe
@@ -672,7 +685,7 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Source : #link("https://haveibeenpwned.com/API/v3#PwnedPasswords")[haveibeenpwned.com/API/v3]]
 
-== 2.16 - Les bons exemples
+== 2.17 - Les bons exemples
 
 - Suivre l'*OWASP Password Storage Cheat Sheet*
 - Ne pas inventer sa propre crypto
