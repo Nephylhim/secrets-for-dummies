@@ -1,7 +1,8 @@
 # secrets-for-dummies
 
-A small educational repo demonstrating password hashing (MD5, SHA-512) and
-GPU-accelerated hash cracking with [hashcat](https://hashcat.net/hashcat/).
+A small educational repo demonstrating password hashing (MD5, SHA-512,
+PBKDF2-HMAC-SHA512) and GPU-accelerated hash cracking with
+[hashcat](https://hashcat.net/hashcat/).
 
 ## Setup (WSL2 + NVIDIA GPU)
 
@@ -35,6 +36,7 @@ hashcat -b   # benchmark
 ```bash
 cd 01-md5 && ./hash-command.sh && ./crack-hashes.sh
 cd 02-sha512 && ./sha512-command.sh && ./crack-hashes.sh
+cd 03-pbkdf2 && ./pbkdf2-command.sh && ./crack-hashes.sh
 ```
 
 Cracked plaintexts are written to `cracked.txt` in each algorithm's

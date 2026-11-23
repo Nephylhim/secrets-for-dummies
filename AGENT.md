@@ -13,11 +13,14 @@ Layout:
 - `example.dict` — dictionary/wordlist used for cracking attempts.
 - `01-md5/` — MD5 hashing (`hash-command.sh`) and cracking (`crack-hashes.sh`, mode `-m 0`).
 - `02-sha512/` — SHA-512 hashing (`sha512-command.sh`) and cracking (`crack-hashes.sh`, mode `-m 1700`).
+- `03-pbkdf2/` — PBKDF2-HMAC-SHA512 hashing (`pbkdf2-command.sh`, 220 000 iterations,
+  no salt, hashcat's `sha512:iterations:salt:hash` format) and cracking
+  (`crack-hashes.sh`, mode `-m 12100`).
 
 Each `*/hashes.txt` (or `md5.hash`) file is generated output, not hand-written;
 regenerate it by re-running the corresponding `hash-command.sh` /
-`sha512-command.sh` script. `*/cracked.txt` is also generated output from
-`crack-hashes.sh` and safe to delete/regenerate.
+`sha512-command.sh` / `pbkdf2-command.sh` script. `*/cracked.txt` is also
+generated output from `crack-hashes.sh` and safe to delete/regenerate.
 
 ## Environment
 
@@ -55,6 +58,7 @@ hashcat -b   # benchmark
 ```bash
 cd 01-md5 && ./hash-command.sh && ./crack-hashes.sh
 cd 02-sha512 && ./sha512-command.sh && ./crack-hashes.sh
+cd 03-pbkdf2 && ./pbkdf2-command.sh && ./crack-hashes.sh
 ```
 
 Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
@@ -67,7 +71,8 @@ Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
 - Call the system `hashcat` binary directly (no `HASHCAT_DIR` env var, no
   `hashcat.exe`/Windows build).
 - Keep hash mode numbers (`-m`) in sync with hashcat's mode for the
-  algorithm used in that directory (MD5 = 0, SHA-512 = 1700).
+  algorithm used in that directory (MD5 = 0, SHA-512 = 1700,
+  PBKDF2-HMAC-SHA512 = 12100).
 
 ## Scope / ethics
 

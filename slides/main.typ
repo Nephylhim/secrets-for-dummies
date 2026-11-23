@@ -411,6 +411,10 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Source : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6, RTX 4090]]
 
+== Démo : PBKDF2
+
+Démo live (`03-pbkdf2/`) : hash avec 220 000 itérations, puis cassage avec hashcat (beaucoup plus lent qu'un MD5/SHA-512).
+
 == 2.5 - Attaque : les rainbow tables
 
 - Tables pré-calculées hash → mot de passe : on cherche le hash volé dans la table
