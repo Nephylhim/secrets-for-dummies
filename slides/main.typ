@@ -562,7 +562,34 @@ Démo live (`02-sha512/`).
   Une phrase de passe de plusieurs mots aléatoires est plus facile à retenir et plus longue qu'un mot court avec des substitutions (P\@ssw0rd), donc plus résistante à la force brute.
 ]
 
-== 2.11 - Poivre : où le stocker ?
+== 2.11 - Poivre
+
+- Secret *commun* à tous les utilisateurs, *jamais stocké avec la BDD*
+- Comme le sel, il est ajouté au mot de passe avant le hash, mais *il reste secret*
+- Une fuite de la seule BDD (injection SQL, sauvegarde) ne suffit plus à casser les hashs : sans le poivre, impossible de tester des mots de passe
+
+#v(0.3em)
+#align(center)[
+  #grid(
+    columns: (auto, auto, auto),
+    column-gutter: 1.2em,
+    align: horizon + center,
+    tbox[
+      #text(size: 0.6em, weight: "bold")[Base de données] \
+      #mono[hash + sel]
+    ],
+    text(size: 1.2em, weight: "black")[≠],
+    tbox(fill: dy-yellow)[
+      #text(size: 0.6em, weight: "bold")[Ailleurs (coffre, HSM…)] \
+      #mono[poivre]
+    ],
+  )
+
+  #v(0.4em)
+  #mono(size: 0.8em)[hash(mot de passe + sel + poivre)]
+]
+
+== 2.12 - Poivre : où le stocker ?
 
 - Secret *commun*, jamais stocké avec la BDD
 - Où le stocker ? *Du plus au moins recommandé* :
@@ -588,7 +615,7 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Sources : #link("https://pages.nist.gov/800-63-4/sp800-63b.html")[NIST SP 800-63B-4] (secret « SHOULD » en HSM/TEE), #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[OWASP] (vault ou HSM)]
 
-== 2.12 - Poivre : quelle stratégie ?
+== 2.13 - Poivre : quelle stratégie ?
 
 #set text(size: 0.95em)
 Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
@@ -626,7 +653,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
   La rotation « directe » du chiffrement du hash est ma déduction : on déchiffre avec l'ancienne clé et on rechiffre avec la nouvelle, sans connaître le mot de passe. À valider avant de l'affirmer.
 ]
 
-== 2.13 - Comparaison en temps constant
+== 2.14 - Comparaison en temps constant
 
 - Comparer deux hashs avec `==` s'arrête au *premier octet différent* : le temps de réponse fuit de l'information (*timing attack*)
 - Utiliser une comparaison *en temps constant*
@@ -642,7 +669,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
   )
 ]
 
-== 2.14 - Migrer d'anciens hashs
+== 2.15 - Migrer d'anciens hashs
 
 - Cas réel : une BDD en MD5 ou SHA-1, qu'on veut faire passer à Argon2id
 - On ne peut pas convertir un hash : il faut le mot de passe en clair
@@ -659,7 +686,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 #v(1fr)
 #text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Upgrading Legacy Hashes)]
 
-== 2.15 - Attaques en ligne et hors ligne
+== 2.16 - Attaques en ligne et hors ligne
 
 - *Hors ligne* : l'attaquant a la BDD et teste à l'infini sur son GPU : seul le hash lent protège
 - *En ligne* : l'attaquant passe par le formulaire de connexion, et on peut le freiner
@@ -667,7 +694,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
   - *MFA* : un mot de passe volé ne suffit plus
   - Détecter le *credential stuffing* (mots de passe réutilisés issus d'autres fuites)
 
-== 2.16 - Refuser les mots de passe déjà fuités
+== 2.17 - Refuser les mots de passe déjà fuités
 
 - *Pwned Passwords* (HIBP) : des centaines de millions de mots de passe issus de fuites, interrogeables par API
 - *k-anonymity* : on envoie seulement les *5 premiers caractères* du SHA-1, jamais le mot de passe
@@ -691,7 +718,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 #v(1fr)
 #text(size: 14pt)[Source : #link("https://haveibeenpwned.com/API/v3#PwnedPasswords")[haveibeenpwned.com/API/v3]]
 
-== 2.17 - Les bons exemples
+== 2.18 - Les bons exemples
 
 - Suivre l'*OWASP Password Storage Cheat Sheet*
 - Ne pas inventer sa propre crypto
