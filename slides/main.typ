@@ -8,6 +8,7 @@
     subtitle: [Protéger des mots de passe, pas à pas],
     author: [Thomas Coussot],
   ),
+  ..if "notes" in sys.inputs { (config-common(show-notes-on-second-screen: right),) } else { () },
 )
 #set text(lang: "fr", size: 22pt)
 #set raw(theme: none)
@@ -137,15 +138,12 @@
   image("rsc/haveibeenpwned.png", width: 100%),
 )
 
-#v(0.4em)
-#tbox(fill: dy-yellow)[
-  #text(size: 0.75em)[
-    *Note perso* : j'utilise *Spring Security*. Ne jamais coder soi-même ses libs de sécurité : on utilise des libs éprouvées et maintenues.
-  ]
-]
-
 #v(1fr)
 #text(size: 14pt)[Capture : #link("https://haveibeenpwned.com")[haveibeenpwned.com]]
+
+#speaker-note[
+  Note : ne jamais coder soi-même ses libs de sécurité (hash, crypto, authentification). Utiliser des libs éprouvées et maintenues, par exemple Spring Security côté Java, qui fournit déjà des encodeurs de mots de passe (bcrypt, Argon2, PBKDF2).
+]
 
 = 1 - Pourquoi sécuriser les secrets ?
 

@@ -5,3 +5,7 @@ build:
 
 watch:
     typst watch main.typ main.pdf
+
+# PDF avec les notes de présentateur à droite
+notes:
+    typst compile --input notes=1 main.typ main-notes.pdf
