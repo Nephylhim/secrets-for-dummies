@@ -558,11 +558,10 @@ Démo live (`02-sha512/`).
 == 2.10 - Longueur plutôt que complexité
 
 #align(center)[
-  #image("rsc/xkcd-936-password-strength.png", height: 80%)
+  #move(dy: -24pt, image("rsc/xkcd-936-password-strength.png", height: 370pt))
 ]
 
-#v(1fr)
-#text(size: 14pt)[Source : #link("https://xkcd.com/936/")[xkcd 936, _Password Strength_] (Randall Munroe, CC BY-NC 2.5)]
+#place(bottom + left, dy: 8pt, text(size: 12pt)[Source : #link("https://xkcd.com/936/")[xkcd 936, _Password Strength_] \ Randall Munroe, CC BY-NC 2.5])
 
 #speaker-note[
   Une phrase de passe de plusieurs mots aléatoires est plus facile à retenir et plus longue qu'un mot court avec des substitutions (P\@ssw0rd), donc plus résistante à la force brute.
