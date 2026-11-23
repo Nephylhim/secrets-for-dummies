@@ -400,6 +400,8 @@ Démo live (`02-sha512/`).
     [SHA-256], [22,0 milliards],
     [SHA-512], [7,5 milliards],
     [PBKDF2-SHA512 (220 000 it.)], [≈ 14 000],
+    [bcrypt (coût 5)], [184 000],
+    [Argon2id], [non mesuré (mémoire élevée : GPU peu efficace)],
   )
 ]
 
@@ -504,21 +506,22 @@ Démo live (`02-sha512/`).
 
 #v(0.3em)
 #align(center)[
+  #set text(size: 0.8em)
   #table(
-    columns: 3,
-    inset: 0.4em,
+    columns: 4,
+    inset: 0.35em,
     stroke: 1.5pt + black,
     fill: (_, y) => if y == 0 { dy-yellow } else { white },
     align: left,
-    [Mot de passe], [MD5], [PBKDF2-SHA512 (220 000 it.)],
-    [8 minuscules], [≈ 1,3 seconde], [≈ 170 jours],
-    [8 caractères imprimables], [≈ 10 heures], [≈ 15 000 ans],
-    [12 caractères imprimables], [≈ 92 000 ans], [≈ 1 200 milliards d'années],
+    [Mot de passe], [MD5], [PBKDF2-SHA512 (220 000 it.)], [bcrypt (coût 5)],
+    [8 minuscules], [≈ 1,3 seconde], [≈ 170 jours], [≈ 13 jours],
+    [8 caractères imprimables], [≈ 11 heures], [≈ 15 000 ans], [≈ 1 140 ans],
+    [12 caractères imprimables], [≈ 104 000 ans], [≈ 1 200 milliards d'années], [≈ 93 milliards d'années],
   )
 ]
 
 #v(0.2em)
-#text(size: 0.7em)[Calcul : nombre de combinaisons ÷ vitesse d'une RTX 4090 (MD5 : 164 GH/s, PBKDF2-SHA512 : ≈ 14 000 essais/s).]
+#text(size: 0.7em)[Calcul : nombre de combinaisons ÷ vitesse d'une RTX 4090 (MD5 : 164 GH/s, PBKDF2-SHA512 : ≈ 14 000 essais/s, bcrypt coût 5 : 184 kH/s). Un coût de 10 est 32 fois plus lent.]
 
 #v(1fr)
 #text(size: 14pt)[Vitesses : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6 sur RTX 4090]]
