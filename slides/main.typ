@@ -502,26 +502,32 @@ Démo live (`02-sha512/`).
 == 2.8 - Les mots de passe les plus courants
 
 - Un dictionnaire n'est pas théorique : les mots de passe réels sont *très prévisibles*
-- Top 10 mondial (analyse de fuites, sept. 2024 – sept. 2025) :
+- Top 10 selon trois sources (les classements diffèrent, les motifs sont les mêmes) :
 
-#v(0.3em)
+#v(0.2em)
 #align(center)[
+  #set text(size: 0.7em)
   #table(
-    columns: 5,
-    inset: 0.4em,
+    columns: 4,
+    inset: 0.22em,
     stroke: 1.5pt + black,
-    fill: white,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
     align: left,
-    mono[1. 123456], mono[2. admin], mono[3. 12345678], mono[4. 123456789], mono[5. 12345],
-    mono[6. password], mono[7. Aa123455], mono[8. 1234567890], mono[9. pass\@123], mono[10. admin123],
+    [\#], [NordPass 2025], [SecLists 2025], [RockYou (fuite 2009)],
+    ..range(10).map(i => (
+      [#(i + 1)],
+      mono(size: 0.85em, ("123456", "admin", "12345678", "123456789", "12345", "password", "Aa123455", "1234567890", "pass@123", "admin123").at(i)),
+      mono(size: 0.85em, ("123456", "admin", "12345678", "123456789", "12345", "password", "Aa123456", "1234567890", "Pass@123", "admin123").at(i)),
+      mono(size: 0.85em, ("123456", "12345", "123456789", "password", "iloveyou", "princess", "1234567", "rockyou", "12345678", "abc123").at(i)),
+    )).flatten(),
   )
 ]
 
-#v(0.3em)
+#v(0.2em)
 - Ils tombent tous dans les *premières secondes* d'une attaque par dictionnaire
 
 #v(1fr)
-#text(size: 14pt)[Source : NordPass et NordStellar, _Most common passwords 2025_, via #link("https://devolutions.net/blog/most-common-passwords-of-2025-the-more-things-change-the-more-they-stay-the-same/")[Devolutions]]
+#text(size: 12pt)[Sources : NordPass 2025 (via #link("https://devolutions.net/blog/most-common-passwords-of-2025-the-more-things-change-the-more-they-stay-the-same/")[Devolutions]) ; #link("https://github.com/danielmiessler/SecLists/blob/master/Passwords/Common-Credentials/2025-199_most_used_passwords.txt")[SecLists, 2025-199_most_used_passwords] ; #link("https://md5hashonline.com/most-common-passwords/")[md5hashonline.com] (liste RockYou, 14,3 M de mots de passe)]
 
 == 2.9 - Force brute et entropie
 
