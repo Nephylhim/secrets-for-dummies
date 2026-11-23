@@ -172,7 +172,7 @@
 == 2.1 - Chiffrement
 
 - *Asymétrique* : inutile ici
-- *Symétrique* : ce qui se chiffre se déchiffre
+- *Symétrique* : ce qui se chiffre se déchiffre. Problème : qui a la *clé* lit *tous* les mots de passe, alors qu'on n'a jamais besoin de les relire, seulement de les *vérifier* (d'où le hash)
 
 #v(0.5em)
 #align(center)[
@@ -365,6 +365,57 @@ Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec ha
 
 Démo live (`02-sha512/`).
 
+== 2.4 - Combien de hashs par seconde ?
+
+- Mesures hashcat sur *un seul GPU grand public* (RTX 4090), par algorithme :
+
+#v(0.3em)
+#align(center)[
+  #table(
+    columns: 2,
+    inset: 0.4em,
+    stroke: 1.5pt + black,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
+    align: left,
+    [Algorithme], [Essais par seconde],
+    [MD5], [164,1 milliards],
+    [SHA-256], [22,0 milliards],
+    [SHA-512], [7,5 milliards],
+    [PBKDF2-HMAC-SHA256 (999 itérations)], [8,9 millions],
+    [PBKDF2-HMAC-SHA512 (999 itérations)], [3,1 millions],
+    [bcrypt (coût 5)], [184 000],
+  )
+]
+
+#v(0.2em)
+#text(size: 0.7em)[Plus c'est lent pour l'attaquant, mieux c'est : on passe de 164 milliards à 184 000 essais par seconde.]
+
+#v(1fr)
+#text(size: 14pt)[Source : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6, RTX 4090]]
+
+== 2.4 - HMAC
+
+- *HMAC(clé, message)* : un hash qui mélange le message avec une *clé secrète*
+- Même clé + même message → même résultat (fonction pure), mais sans la clé, impossible de le recalculer
+- Sert de brique à *PBKDF2* (qui répète un HMAC) et au *poivre* (le poivre est la clé)
+
+#v(0.3em)
+#align(center)[
+  #grid(
+    columns: (auto, auto, auto, auto, auto),
+    column-gutter: 0.8em,
+    align: horizon + center,
+    tbox[#mono[message]],
+    text(size: 1.2em, weight: "black")[+],
+    tbox(fill: dy-yellow)[#mono[clé secrète]],
+    text(size: 1.2em, weight: "black")[→],
+    box(fill: dy-yellow, stroke: 3pt + black, inset: 0.6em, text(weight: "black")[HMAC]),
+  )
+
+  #v(0.3em)
+  #mono(size: 0.7em)[HMAC-SHA256("alice", clé) = 9c1f…]
+]
+
 == 2.4 - Hash lent
 
 - *PBKDF2* (ex : PBKDF2-HMAC-SHA512) : on répète le hash des centaines de milliers de fois
@@ -440,7 +491,57 @@ Démo live (`02-sha512/`).
   #text(size: 0.75em)[hashcat : #mono(size: 1em)[-a 0] (dictionnaire), #mono(size: 1em)[-r] (règles de mutation)]
 ]
 
-== 2.8 - Poivre
+== 2.8 - Les mots de passe les plus courants
+
+- Un dictionnaire n'est pas théorique : les mots de passe réels sont *très prévisibles*
+- Top 10 mondial (analyse de fuites, sept. 2024 – sept. 2025) :
+
+#v(0.3em)
+#align(center)[
+  #table(
+    columns: 5,
+    inset: 0.4em,
+    stroke: 1.5pt + black,
+    fill: white,
+    align: left,
+    mono[1. 123456], mono[2. admin], mono[3. 12345678], mono[4. 123456789], mono[5. 12345],
+    mono[6. password], mono[7. Aa123455], mono[8. 1234567890], mono[9. pass\@123], mono[10. admin123],
+  )
+]
+
+#v(0.3em)
+- Ils tombent tous dans les *premières secondes* d'une attaque par dictionnaire
+
+#v(1fr)
+#text(size: 14pt)[Source : NordPass et NordStellar, _Most common passwords 2025_, via #link("https://devolutions.net/blog/most-common-passwords-of-2025-the-more-things-change-the-more-they-stay-the-same/")[Devolutions]]
+
+== 2.9 - Force brute et entropie
+
+- Sans dictionnaire : on teste *toutes* les combinaisons. Le temps dépend de l'*alphabet* et surtout de la *longueur*
+- Chaque caractère de plus multiplie le temps par la taille de l'alphabet
+
+#v(0.3em)
+#align(center)[
+  #table(
+    columns: 3,
+    inset: 0.4em,
+    stroke: 1.5pt + black,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
+    align: left,
+    [Mot de passe], [MD5], [bcrypt (coût 5)],
+    [8 minuscules], [≈ 1,3 seconde], [≈ 13 jours],
+    [8 caractères imprimables], [≈ 10 heures], [≈ 1 050 ans],
+    [12 caractères imprimables], [≈ 92 000 ans], [≈ 82 milliards d'années],
+  )
+]
+
+#v(0.2em)
+#text(size: 0.7em)[Calcul : nombre de combinaisons ÷ vitesse d'une RTX 4090 (MD5 : 164 GH/s, bcrypt coût 5 : 184 kH/s). Un coût de 10 est 32 fois plus lent.]
+
+#v(1fr)
+#text(size: 14pt)[Vitesses : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6 sur RTX 4090]]
+
+== 2.10 - Poivre
 
 - Secret *commun*, jamais stocké avec la BDD
 - Stockage possible : secret manager (ex : Vault), variables d'environnement, code
@@ -466,7 +567,98 @@ Démo live (`02-sha512/`).
   #mono(size: 0.8em)[hash(mot de passe + sel + poivre)]
 ]
 
-== 2.9 - Les bons exemples
+== 2.11 - Poivre : exemple et rotation
+
+#set text(size: 0.85em)
+- Deux stratégies (OWASP) :
+  - *Avant* : poivre ajouté au mot de passe, avant le hash lent
+  - *Après* : hash normal, puis *HMAC* (poivre = clé) sur le hash
+- Un poivre ne se change pas sans connaître les mots de passe : s'il est compromis, il faut *forcer le reset* des comptes concernés
+- Piste : stocker une *version du poivre* à côté du hash
+
+#v(0.2em)
+#align(center)[
+  #table(
+    columns: 4,
+    inset: 0.4em,
+    stroke: 1.5pt + black,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
+    align: left,
+    [login], [hash (Argon2id + sel)], [HMAC(poivre)], [version],
+    mono[alice], mono[\$argon2id\$…], mono[9c1f…], mono[v1],
+    mono[bob], mono[\$argon2id\$…], mono[2b7e…], mono[v1],
+  )
+]
+
+#v(1fr)
+#text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Peppering)]
+
+== 2.12 - Comparaison en temps constant
+
+- Comparer deux hashs avec `==` s'arrête au *premier octet différent* : le temps de réponse fuit de l'information (*timing attack*)
+- Utiliser une comparaison *en temps constant*
+- Les libs de hash de mots de passe (bcrypt, Argon2…) font déjà la vérification pour vous : ne pas recoder la comparaison
+
+#v(0.3em)
+#align(center)[
+  #db-table(
+    [Langage], [Fonction],
+    [Java], mono[MessageDigest.isEqual],
+    [Python], mono[hmac.compare_digest],
+    [Node.js], mono[crypto.timingSafeEqual],
+  )
+]
+
+== 2.13 - Migrer d'anciens hashs
+
+- Cas réel : une BDD en MD5 ou SHA-1, qu'on veut faire passer à Argon2id
+- On ne peut pas convertir un hash : il faut le mot de passe en clair
+- *À la connexion* : vérifier avec l'ancien hash, puis re-hasher avec le nouvel algo et remplacer
+- Stocker l'algo et ses paramètres *avec le hash* (format PHC) pour accepter un mélange ancien/nouveau pendant la transition
+
+#v(0.3em)
+#align(center)[
+  #tbox(fill: white)[
+    #mono(size: 0.62em)[\$argon2id\$v=19\$m=19456,t=2,p=1\$\<sel\>\$\<hash\>]
+  ]
+]
+
+#v(1fr)
+#text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Upgrading Legacy Hashes)]
+
+== 2.14 - Attaques en ligne et hors ligne
+
+- *Hors ligne* : l'attaquant a la BDD et teste à l'infini sur son GPU : seul le hash lent protège
+- *En ligne* : l'attaquant passe par le formulaire de connexion, et on peut le freiner
+  - Limiter le nombre d'essais (*rate limiting*), délais croissants, verrouillage temporaire
+  - *MFA* : un mot de passe volé ne suffit plus
+  - Détecter le *credential stuffing* (mots de passe réutilisés issus d'autres fuites)
+
+== 2.15 - Refuser les mots de passe déjà fuités
+
+- *Pwned Passwords* (HIBP) : des centaines de millions de mots de passe issus de fuites, interrogeables par API
+- *k-anonymity* : on envoie seulement les *5 premiers caractères* du SHA-1, jamais le mot de passe
+
+#v(0.3em)
+#align(center)[
+  #tbox(fill: white)[
+    #mono(size: 0.7em)[GET api.pwnedpasswords.com/range/5BAA6]
+  ]
+
+  #v(0.2em)
+  #text(size: 0.8em)[La réponse liste les suffixes de hash et leur nombre d'occurrences :]
+
+  #tbox(fill: white)[
+    #mono(size: 0.6em)[1E4C9B93F3F0682250B6CF8331B7EE68FD8:52373976]
+  ]
+
+  #text(size: 0.8em)[Le suffixe de `password` (SHA-1 `5BAA61E4…`) apparaît 52 373 976 fois]
+]
+
+#v(1fr)
+#text(size: 14pt)[Source : #link("https://haveibeenpwned.com/API/v3#PwnedPasswords")[haveibeenpwned.com/API/v3]]
+
+== 2.16 - Les bons exemples
 
 - Suivre l'*OWASP Password Storage Cheat Sheet*
 - Ne pas inventer sa propre crypto
@@ -490,7 +682,28 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_]]
 
-= 3 - Ouverture
+= 3 - Au-delà des mots de passe
+
+== Les autres secrets : clés d'API, tokens
+
+- Même problème, autre cible : un secret *commité dans git* reste dans l'historique
+- Ne pas mettre les secrets dans le code, les logs ou les images Docker : *secret manager* (Vault, etc.) ou variables d'environnement injectées
+- *Détecter* les fuites avant qu'elles partent : scan du dépôt et de l'historique
+
+#v(0.3em)
+#align(center)[
+  #db-table(
+    [Outil], [Rôle],
+    [gitleaks], [scan d'un dépôt git (historique inclus), utilisable en pre-commit et en CI],
+    [trufflehog], [scan et *vérification* que le secret trouvé est encore valide],
+    [GitHub secret scanning], [détection côté plateforme, avec push protection],
+  )
+]
+
+#v(1fr)
+#text(size: 14pt)[Sites : #link("https://github.com/gitleaks/gitleaks")[github.com/gitleaks/gitleaks], #link("https://github.com/trufflesecurity/trufflehog")[github.com/trufflesecurity/trufflehog]]
+
+= 4 - Ouverture
 
 == Et après ?
 
