@@ -1,0 +1,13 @@
+default: hash crack
+
+# Regenerate hashes.txt from ../passwords.txt
+hash:
+    ./hash-command.sh
+
+# Crack hashes.txt with hashcat (mode 0, MD5)
+crack:
+    ./crack-hashes.sh
+
+# Remove the cracked.txt output
+clean:
+    rm -f cracked.txt

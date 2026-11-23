@@ -33,10 +33,16 @@ hashcat -b   # benchmark
 
 ## Usage
 
+Each algorithm directory has a `justfile` with three recipes: `hash`
+regenerates `hashes.txt` from `../passwords.txt`, `crack` runs the hashcat
+attack against it, and `clean` removes the `cracked.txt` output. Plain
+`just` runs `hash` + `crack` in order (requires
+[`just`](https://github.com/casey/just)).
+
 ```bash
-cd 01-md5 && ./hash-command.sh && ./crack-hashes.sh
-cd 02-sha512 && ./sha512-command.sh && ./crack-hashes.sh
-cd 03-pbkdf2 && ./pbkdf2-command.sh && ./crack-hashes.sh
+cd 01-md5 && just
+cd 02-sha512 && just
+cd 03-pbkdf2 && just
 ```
 
 Cracked plaintexts are written to `cracked.txt` in each algorithm's

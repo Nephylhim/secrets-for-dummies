@@ -55,10 +55,15 @@ hashcat -b   # benchmark
 
 ## Usage
 
+Each algorithm directory has a `justfile` wrapping its two scripts:
+`just hash` regenerates `hashes.txt` from `../passwords.txt`, `just crack`
+runs the hashcat cracking attempt, `just clean` removes `cracked.txt`, and
+plain `just` runs `hash` + `crack` in order.
+
 ```bash
-cd 01-md5 && ./hash-command.sh && ./crack-hashes.sh
-cd 02-sha512 && ./sha512-command.sh && ./crack-hashes.sh
-cd 03-pbkdf2 && ./pbkdf2-command.sh && ./crack-hashes.sh
+cd 01-md5 && just        # or: ./hash-command.sh && ./crack-hashes.sh
+cd 02-sha512 && just      # or: ./sha512-command.sh && ./crack-hashes.sh
+cd 03-pbkdf2 && just      # or: ./pbkdf2-command.sh && ./crack-hashes.sh
 ```
 
 Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
@@ -67,12 +72,17 @@ Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
 
 - Scripts are POSIX-ish bash, executable (`chmod +x`), called from within
   their own directory (they reference `../passwords.txt` / `../example.dict`
-  relative to `$(pwd)`).
+  relative to `$(pwd)`). `just` changes into the justfile's directory before
+  running recipes, so this still holds when invoked via `just`.
 - Call the system `hashcat` binary directly (no `HASHCAT_DIR` env var, no
   `hashcat.exe`/Windows build).
 - Keep hash mode numbers (`-m`) in sync with hashcat's mode for the
   algorithm used in that directory (MD5 = 0, SHA-512 = 1700,
   PBKDF2-HMAC-SHA512 = 12100).
+- Each algorithm directory's `justfile` wraps its two existing scripts
+  (`hash` → `*-command.sh`, `crack` → `crack-hashes.sh`) plus a `clean`
+  recipe (`rm -f cracked.txt`); keep recipe names consistent across
+  directories and update it if a script is renamed.
 
 ## Scope / ethics
 

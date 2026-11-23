@@ -1,0 +1,13 @@
+default: hash crack
+
+# Regenerate hashes.txt from ../passwords.txt
+hash:
+    ./sha512-command.sh
+
+# Crack hashes.txt with hashcat (mode 1700, SHA-512)
+crack:
+    ./crack-hashes.sh
+
+# Remove the cracked.txt output
+clean:
+    rm -f cracked.txt
