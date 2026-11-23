@@ -74,3 +74,41 @@ Cracked plaintexts are written to `cracked.txt` in each algorithm directory.
 This repo is for learning how hashing and password cracking work, using
 only locally generated sample data. Do not use it against real/third-party
 credentials.
+
+## Slides (`slides/`)
+
+The talk **« Secrets pour les nuls »** (French) is a Typst + touying deck.
+
+**Goal of the talk:** approach security from the *attacker's point of view*
+and make the attacker's job harder step by step, each slide adding a measure
+or complexity (plaintext → encryption → hash → slow hash → rainbow tables vs
+salt → dictionary/brute force vs strong passwords → pepper → …). Keep this
+narrative order: never use a concept (bcrypt, Argon2id, pepper…) before it
+has been introduced (open items are in `slides/todo.md`).
+
+Files:
+- `slides/main.typ`: the whole deck. `slides/dummies-theme.typ`: custom theme.
+- `slides/plan.md`: the author's plan. `slides/todo.md`: remaining work.
+- `slides/rsc/`: images; `rsc/icons/`: OpenMoji SVGs (no emoji font installed).
+- `slides/justfile`: `just build`, `just watch`, `just notes`
+  (`main-notes.pdf` with speaker notes, via `--input notes=1`).
+
+Conventions:
+- Slides and commit messages are in **French**.
+- Every source is cited on the slide as a **clickable `#link(url)[…]`**.
+- Personal remarks and extra material go in `#speaker-note[…]`, not on slides.
+- Slide headings are numbered by section (`== 2.11 - Poivre`); renumber the
+  following ones when inserting a slide. The footer counter skips title and
+  section slides.
+- Header/footer use absolute sizes (22pt base) so a `#set text(size: …)`
+  inside a slide never changes them.
+- Helpers in `main.typ`: `tbox`, `mono`, `db-table` (2 columns only; use
+  `table` otherwise), `arrow`, `diff-hex`.
+- If a slide overflows, Typst silently adds a page with the same title: after
+  building, check consecutive pages for duplicate titles
+  (`pdftotext -f N -l N main.pdf - | head -1`) and shrink the content.
+- Preview a page: `typst compile main.typ /tmp/p{n}.png --ppi 60`.
+- Figures must be verifiable (OWASP, NIST, hashcat benchmark…); flag
+  anything computed or inferred (e.g. PBKDF2 speed extrapolated from 999
+  iterations).
+

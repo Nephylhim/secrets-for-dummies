@@ -40,34 +40,41 @@
   composer: auto,
   ..bodies,
 ) = touying-slide-wrapper(self => {
-  let header(self) = align(top, block(
-    width: 100%,
-    fill: dy-yellow,
-    stroke: (bottom: 6pt + dy-black),
-    inset: (x: 1.5em, y: 0.7em),
-    {
-      set text(fill: dy-black, weight: "black", size: 1.1em)
-      grid(
-        columns: (1fr, auto),
-        align: horizon,
-        upper(utils.display-current-heading(level: 2, style: auto)),
-        diamonds(n: 3),
-      )
-    },
-  ))
-  let footer(self) = align(bottom, block(
-    width: 100%,
-    fill: dy-black,
-    inset: (x: 1.5em, y: 0.45em),
-    {
-      set text(fill: dy-yellow, size: 0.55em, weight: "bold")
-      grid(
-        columns: (1fr, auto),
-        upper(self.info.title),
-        context utils.slide-counter.display() + " / " + utils.last-slide-number,
-      )
-    },
-  ))
+  // Tailles absolues : un `#set text(size: …)` dans une slide ne doit pas déformer header/footer
+  let header(self) = {
+    set text(size: 22pt)
+    align(top, block(
+      width: 100%,
+      fill: dy-yellow,
+      stroke: (bottom: 6pt + dy-black),
+      inset: (x: 1.5em, y: 0.7em),
+      {
+        set text(fill: dy-black, weight: "black", size: 1.1em)
+        grid(
+          columns: (1fr, auto),
+          align: horizon,
+          upper(utils.display-current-heading(level: 2, style: auto)),
+          diamonds(n: 3),
+        )
+      },
+    ))
+  }
+  let footer(self) = {
+    set text(size: 22pt)
+    align(bottom, block(
+      width: 100%,
+      fill: dy-black,
+      inset: (x: 1.5em, y: 0.45em),
+      {
+        set text(fill: dy-yellow, size: 0.55em, weight: "bold")
+        grid(
+          columns: (1fr, auto),
+          upper(self.info.title),
+          context utils.slide-counter.display() + " / " + utils.last-slide-number,
+        )
+      },
+    ))
+  }
   let self = utils.merge-dicts(
     self,
     config-page(

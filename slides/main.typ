@@ -354,7 +354,8 @@ Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec ha
 - *Intégrité* : vérifier qu'un fichier n'a pas été modifié ou corrompu (checksum d'un téléchargement)
 - *Identifiants de contenu* : Git identifie commits et fichiers par leur hash
 - *Signatures et certificats* : on signe le hash d'un document plutôt que le document entier
-- *Déduplication, caches, tables de hachage*
+- *Déduplication et caches* : deux contenus identiques ont le même hash
+- *Structures de données* (`HashMap`, `dict`, `Set`) : le hash de la clé donne l'emplacement en mémoire. Rien à voir avec nos tables de mots de passe
 
 #v(0.3em)
 #align(center)[
@@ -364,29 +365,6 @@ Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec ha
 == Démo : SHA-512
 
 Démo live (`02-sha512/`).
-
-== 2.4 - HMAC
-
-- *HMAC(clé, message)* : un hash qui mélange le message avec une *clé secrète*
-- Même clé + même message → même résultat (fonction pure), mais sans la clé, impossible de le recalculer
-- Sert de brique à *PBKDF2* (qui répète un HMAC des milliers de fois)
-
-#v(0.3em)
-#align(center)[
-  #grid(
-    columns: (auto, auto, auto, auto, auto),
-    column-gutter: 0.8em,
-    align: horizon + center,
-    tbox[#mono[message]],
-    text(size: 1.2em, weight: "black")[+],
-    tbox(fill: dy-yellow)[#mono[clé secrète]],
-    text(size: 1.2em, weight: "black")[→],
-    box(fill: dy-yellow, stroke: 3pt + black, inset: 0.6em, text(weight: "black")[HMAC]),
-  )
-
-  #v(0.3em)
-  #mono(size: 0.7em)[HMAC-SHA256("alice", clé) = 9c1f…]
-]
 
 == 2.4 - Hash lent
 
@@ -400,9 +378,6 @@ Démo live (`02-sha512/`).
     #mono(size: 0.9em)[PBKDF2-HMAC-SHA512(mot de passe, 220 000 itérations)]
   ]
 ]
-
-#v(0.4em)
-- D'autres algos de hash lent : *bcrypt*, puis *Argon2id* (recommandé aujourd'hui)
 
 #speaker-note[
   220 000 itérations = valeur OWASP pour PBKDF2-HMAC-SHA512 (600 000 pour PBKDF2-HMAC-SHA256).
@@ -425,8 +400,6 @@ Démo live (`02-sha512/`).
     [SHA-256], [22,0 milliards],
     [SHA-512], [7,5 milliards],
     [PBKDF2-SHA512 (220 000 it.)], [≈ 14 000],
-    [bcrypt (coût 5)], [184 000],
-    [Argon2id], [non mesuré (mémoire élevée : GPU peu efficace)],
   )
 ]
 
@@ -537,15 +510,15 @@ Démo live (`02-sha512/`).
     stroke: 1.5pt + black,
     fill: (_, y) => if y == 0 { dy-yellow } else { white },
     align: left,
-    [Mot de passe], [MD5], [bcrypt (coût 5)],
-    [8 minuscules], [≈ 1,3 seconde], [≈ 13 jours],
-    [8 caractères imprimables], [≈ 10 heures], [≈ 1 050 ans],
-    [12 caractères imprimables], [≈ 92 000 ans], [≈ 82 milliards d'années],
+    [Mot de passe], [MD5], [PBKDF2-SHA512 (220 000 it.)],
+    [8 minuscules], [≈ 1,3 seconde], [≈ 170 jours],
+    [8 caractères imprimables], [≈ 10 heures], [≈ 15 000 ans],
+    [12 caractères imprimables], [≈ 92 000 ans], [≈ 1 200 milliards d'années],
   )
 ]
 
 #v(0.2em)
-#text(size: 0.7em)[Calcul : nombre de combinaisons ÷ vitesse d'une RTX 4090 (MD5 : 164 GH/s, bcrypt coût 5 : 184 kH/s). Un coût de 10 est 32 fois plus lent.]
+#text(size: 0.7em)[Calcul : nombre de combinaisons ÷ vitesse d'une RTX 4090 (MD5 : 164 GH/s, PBKDF2-SHA512 : ≈ 14 000 essais/s).]
 
 #v(1fr)
 #text(size: 14pt)[Vitesses : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6 sur RTX 4090]]
@@ -615,10 +588,33 @@ Démo live (`02-sha512/`).
 #v(1fr)
 #text(size: 14pt)[Sources : #link("https://pages.nist.gov/800-63-4/sp800-63b.html")[NIST SP 800-63B-4] (secret « SHOULD » en HSM/TEE), #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[OWASP] (vault ou HSM)]
 
-== 2.13 - Poivre : quelle stratégie ?
+== 2.13 - HMAC
+
+- *HMAC(clé, message)* : un hash qui mélange le message avec une *clé secrète*
+- Même clé + même message → même résultat (fonction pure), mais sans la clé, impossible de le recalculer
+- C'est la brique de *PBKDF2* (qui répète un HMAC des milliers de fois) et l'outil du *poivre*
+
+#v(0.3em)
+#align(center)[
+  #grid(
+    columns: (auto, auto, auto, auto, auto),
+    column-gutter: 0.8em,
+    align: horizon + center,
+    tbox[#mono[message]],
+    text(size: 1.2em, weight: "black")[+],
+    tbox(fill: dy-yellow)[#mono[clé secrète]],
+    text(size: 1.2em, weight: "black")[→],
+    box(fill: dy-yellow, stroke: 3pt + black, inset: 0.6em, text(weight: "black")[HMAC]),
+  )
+
+  #v(0.3em)
+  #mono(size: 0.7em)[HMAC-SHA256("alice", clé) = 9c1f…]
+]
+
+== 2.14 - Poivre : quelle stratégie ?
 
 #set text(size: 0.95em)
-Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
+Deux façons d'utiliser le poivre (OWASP), avec PBKDF2 en exemple :
 
 #v(0.3em)
 #let flow(label, ..steps) = {
@@ -636,12 +632,12 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
     },
   )
 }
-#flow([Avant], tbox[mot de passe + *poivre*], tbox[bcrypt], tbox(fill: dy-yellow)[hash stocké])
+#flow([Avant], tbox[mot de passe + *poivre*], tbox[PBKDF2], tbox(fill: dy-yellow)[hash stocké])
 #v(0.5em)
-#flow([Après], tbox[mot de passe], tbox[bcrypt], tbox[HMAC(*poivre*, hash)], tbox(fill: dy-yellow)[hash stocké])
+#flow([Après], tbox[mot de passe], tbox[PBKDF2], tbox[HMAC(*poivre*, hash)], tbox(fill: dy-yellow)[hash stocké])
 #v(0.4em)
 - *Avant* : le poivre est collé au mot de passe, comme un sel secret
-- *Après* : on hache normalement, puis on « signe » le hash avec un HMAC (vu plus tôt) dont la clé est le poivre
+- *Après* : on hache normalement, puis on « signe » le hash avec un HMAC (vu juste avant) dont la clé est le poivre
 - À la connexion, on refait exactement le même calcul et on compare
 - NIST et OWASP : plutôt *après* ; ParagonIE : *chiffrer* le hash avec une clé
 - Changer de poivre impose un reset des mots de passe (ou garder l'ancien et stocker une *version* à côté du hash)
@@ -650,14 +646,24 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 #text(size: 14pt)[Sources : #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[OWASP] (Peppering), #link("https://pages.nist.gov/800-63-4/sp800-63b.html")[NIST SP 800-63B-4], #link("https://paragonie.com/blog/2016/02/how-safely-store-password-in-2016")[ParagonIE]]
 
 #speaker-note[
-  La rotation « directe » du chiffrement du hash est ma déduction : on déchiffre avec l'ancienne clé et on rechiffre avec la nouvelle, sans connaître le mot de passe. À valider avant de l'affirmer.
+  *Avant ou après ?* Les deux sont sûrs s'ils sont bien implémentés, mais pas équivalents (raisonnement personnel, à partir d'OWASP et NIST, aucune source ne démontre qu'un est plus fort).
+
+  *Après (HMAC du hash), préféré* : le poivre est une clé, ce qui est le rôle du HMAC (NIST : « keyed hash or encryption » avec une clé secrète). On ajoute une couche sans toucher à l'algo de hash lent. On peut l'appliquer à une BDD existante sans connaître les mots de passe : `HMAC(poivre, hash_existant)`, utile en migration. Rotation à la connexion avec une version du poivre stockée. Seul compatible avec un HSM/KMS : la clé ne sort pas, on lui envoie le hash et il calcule le HMAC.
+
+  *Avant (poivre collé au mot de passe)* : impossible à ajouter sur l'existant (il faut attendre que chaque utilisateur se reconnecte). Dépend de la gestion des entrées de l'algo (ex : bcrypt tronque à 72 octets, un poivre ajouté après le mot de passe peut être coupé). Plus simple à coder.
+
+  *Argon2* (RFC 9106, §3.1) a un paramètre optionnel *K, « secret value »* en plus du sel : il entre dans le calcul de l'état initial avec le mot de passe, le sel et les paramètres. C'est un poivre natif, « avant » mais proprement séparé du mot de passe (pas de troncature ni de concaténation ambiguë). Il existe aussi X (associated data, non secret). À vérifier : les libs courantes (argon2-cffi, Spring Security, libsodium) n'exposent pas toujours K.
+
+  *HSM ou Argon2id, que favoriser ?* Ce n'est pas un choix exclusif : ils agissent à deux niveaux. Argon2id est le *hash du mot de passe* (indispensable, recommandé par OWASP). Le HSM protège la *clé du poivre* (défense en profondeur, optionnelle). On les combine : Argon2id d'abord, puis HMAC calculé par le HSM sur le hash (stratégie « après »). Le paramètre K d'Argon2 n'est nécessaire que sans HSM, car il oblige à sortir le poivre du HSM pour le passer à la lib. Ordre de priorité : 1) hash lent bien paramétré (Argon2id), 2) poivre « après » via HMAC, clé en HSM/KMS si disponible, sinon secret manager.
+
+  La rotation « directe » du chiffrement du hash (ParagonIE) est ma déduction : on déchiffre avec l'ancienne clé et on rechiffre avec la nouvelle, sans connaître le mot de passe. À valider avant de l'affirmer.
 ]
 
-== 2.14 - Comparaison en temps constant
+== 2.15 - Comparaison en temps constant
 
 - Comparer deux hashs avec `==` s'arrête au *premier octet différent* : le temps de réponse fuit de l'information (*timing attack*)
 - Utiliser une comparaison *en temps constant*
-- Les libs de hash de mots de passe (bcrypt, Argon2…) font déjà la vérification pour vous : ne pas recoder la comparaison
+- Les libs de hash de mots de passe font déjà la vérification pour vous : ne pas recoder la comparaison
 
 #v(0.3em)
 #align(center)[
@@ -669,7 +675,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
   )
 ]
 
-== 2.15 - Migrer d'anciens hashs
+== 2.16 - Migrer d'anciens hashs
 
 - Cas réel : une BDD en MD5 ou SHA-1, qu'on veut faire passer à Argon2id
 - On ne peut pas convertir un hash : il faut le mot de passe en clair
@@ -686,7 +692,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 #v(1fr)
 #text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Upgrading Legacy Hashes)]
 
-== 2.16 - Attaques en ligne et hors ligne
+== 2.17 - Attaques en ligne et hors ligne
 
 - *Hors ligne* : l'attaquant a la BDD et teste à l'infini sur son GPU : seul le hash lent protège
 - *En ligne* : l'attaquant passe par le formulaire de connexion, et on peut le freiner
@@ -694,7 +700,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
   - *MFA* : un mot de passe volé ne suffit plus
   - Détecter le *credential stuffing* (mots de passe réutilisés issus d'autres fuites)
 
-== 2.17 - Refuser les mots de passe déjà fuités
+== 2.18 - Refuser les mots de passe déjà fuités
 
 - *Pwned Passwords* (HIBP) : des centaines de millions de mots de passe issus de fuites, interrogeables par API
 - *k-anonymity* : on envoie seulement les *5 premiers caractères* du SHA-1, jamais le mot de passe
@@ -718,7 +724,7 @@ Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 #v(1fr)
 #text(size: 14pt)[Source : #link("https://haveibeenpwned.com/API/v3#PwnedPasswords")[haveibeenpwned.com/API/v3]]
 
-== 2.18 - Les bons exemples
+== 2.19 - Les bons exemples
 
 - Suivre l'*OWASP Password Storage Cheat Sheet*
 - Ne pas inventer sa propre crypto

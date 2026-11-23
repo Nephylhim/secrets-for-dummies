@@ -39,3 +39,24 @@ cd 02-sha512 && ./sha512-command.sh && ./crack-hashes.sh
 
 Cracked plaintexts are written to `cracked.txt` in each algorithm's
 directory.
+
+## Slides (`slides/`)
+
+The repo also contains the slides of the talk **« Secrets pour les nuls »**
+(in French), written with [Typst](https://typst.app/) and
+[touying](https://typst.app/universe/package/touying/).
+
+The goal of the talk is to approach security **from the attacker's point of
+view**: we start from a plaintext database, then add measures one by one
+(hash, slow hash, salt, pepper…), each one making the attacker's work harder.
+
+```bash
+cd slides
+just build   # main.pdf
+just watch   # recompile on change
+just notes   # main-notes.pdf: slides + speaker notes on a second screen
+```
+
+- `main.typ`: the deck. `dummies-theme.typ`: custom theme (yellow / black / cream).
+- `plan.md`: the original plan. `todo.md`: remaining work.
+- `rsc/`: images and icons.
