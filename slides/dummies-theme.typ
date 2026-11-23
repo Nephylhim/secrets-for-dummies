@@ -17,6 +17,14 @@
   for _ in range(n) { diamond(fill: fill); h(0.25em) },
 )
 
+#let side(name, body, size: 6em) = grid(
+  columns: (1fr, auto),
+  column-gutter: 1.5em,
+  align: horizon,
+  body,
+  image("rsc/icons/" + name + ".svg", height: size),
+)
+
 #let label(body, fill: white) = block(
   fill: fill,
   stroke: 3pt + dy-black,
