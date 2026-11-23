@@ -564,22 +564,24 @@ Démo live (`02-sha512/`).
 
 == 2.11 - Poivre : où le stocker ?
 
-- Secret *commun*, jamais stocké avec la BDD : une fuite de la seule BDD (injection SQL, sauvegarde) ne suffit plus à casser les hashs
-- Où le stocker ? Par ordre de préférence :
+- Secret *commun*, jamais stocké avec la BDD
+- Où le stocker ? *Du plus au moins recommandé* :
 
 #v(0.2em)
+#set text(size: 0.72em)
 #align(center)[
   #table(
-    columns: 2,
+    columns: (auto, auto, 1fr),
     inset: 0.35em,
     stroke: 1.5pt + black,
     fill: (_, y) => if y == 0 { dy-yellow } else { white },
     align: left,
-    [\#], [Emplacement du poivre],
-    [1], [*HSM / KMS* : la clé ne sort pas, c'est lui qui calcule le HMAC],
-    [2], [*Secret manager* (ex : Vault), lu au démarrage de l'application],
-    [3], [Variable d'environnement ou fichier injecté au déploiement],
-    [4], [Dans le code : à éviter (fuite du dépôt = fuite du poivre)],
+    [\#], [Emplacement], [C'est quoi ?],
+    [1], [*HSM* \ (matériel)], [Boîtier physique qui garde la clé : elle n'en sort jamais, on lui envoie des données et il calcule le HMAC],
+    [1], [*KMS* \ (cloud)], [Même principe en service managé (AWS KMS, Azure Key Vault, GCP KMS), adossé à des HSM],
+    [2], [*Secret manager*], [Coffre logiciel (Vault, AWS Secrets Manager) : l'appli récupère le poivre au démarrage, accès contrôlé et audité],
+    [3], [Variable d'environnement], [Injectée au déploiement : lisible par quiconque accède au serveur ou aux dumps],
+    [4], [Dans le code], [À éviter : fuite du dépôt = fuite du poivre],
   )
 ]
 
@@ -588,30 +590,37 @@ Démo live (`02-sha512/`).
 
 == 2.12 - Poivre : quelle stratégie ?
 
-#set text(size: 0.8em)
-- Un poivre ne se change pas sans les mots de passe : on garde l'ancien le temps que chaque utilisateur se reconnecte
+#set text(size: 0.95em)
+Deux façons d'utiliser le poivre (OWASP), avec bcrypt en exemple :
 
-#v(0.2em)
-#align(center)[
-  #table(
-    columns: 3,
-    inset: 0.35em,
-    stroke: 1.5pt + black,
-    fill: (_, y) => if y == 0 { dy-yellow } else { white },
-    align: left,
-    [Stratégie], [Recommandée par], [Rotation],
-    [*Avant* : hash lent(HMAC(poivre, mdp))], [OWASP], [à la connexion],
-    [*Après* : HMAC(poivre, hash lent(mdp))], [OWASP, NIST], [à la connexion],
-    [*Chiffrer le hash* (clé en KMS/HSM)], [ParagonIE], [directe (rechiffrement)],
+#v(0.3em)
+#let flow(label, ..steps) = {
+  grid(
+    columns: (4.5em, 1fr),
+    align: horizon + left,
+    text(weight: "bold")[#label],
+    {
+      let items = ()
+      for (i, s) in steps.pos().enumerate() {
+        if i > 0 { items.push(arrow) }
+        items.push(s)
+      }
+      stack(dir: ltr, spacing: 0.5em, ..items.map(x => box(x)))
+    },
   )
-]
-
-#v(0.2em)
-- Préférence : étape *après* le hash (NIST, OWASP), clé en HSM/KMS. Chiffrer le hash si on veut une rotation simple
-- Stocker une *version du poivre* à côté du hash
+}
+#flow([Avant], tbox[mot de passe + *poivre*], tbox[bcrypt], tbox(fill: dy-yellow)[hash stocké])
+#v(0.5em)
+#flow([Après], tbox[mot de passe], tbox[bcrypt], tbox[HMAC(*poivre*, hash)], tbox(fill: dy-yellow)[hash stocké])
+#v(0.4em)
+- *Avant* : le poivre est collé au mot de passe, comme un sel secret
+- *Après* : on hache normalement, puis on « signe » le hash avec un HMAC (vu plus tôt) dont la clé est le poivre
+- À la connexion, on refait exactement le même calcul et on compare
+- NIST et OWASP : plutôt *après* ; ParagonIE : *chiffrer* le hash avec une clé
+- Changer de poivre impose un reset des mots de passe (ou garder l'ancien et stocker une *version* à côté du hash)
 
 #v(1fr)
-#text(size: 14pt)[Sources : OWASP (Peppering), NIST SP 800-63B-4, #link("https://paragonie.com/blog/2016/02/how-safely-store-password-in-2016")[ParagonIE]]
+#text(size: 14pt)[Sources : #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[OWASP] (Peppering), #link("https://pages.nist.gov/800-63-4/sp800-63b.html")[NIST SP 800-63B-4], #link("https://paragonie.com/blog/2016/02/how-safely-store-password-in-2016")[ParagonIE]]
 
 #speaker-note[
   La rotation « directe » du chiffrement du hash est ma déduction : on déchiffre avec l'ancienne clé et on rechiffre avec la nouvelle, sans connaître le mot de passe. À valider avant de l'affirmer.
