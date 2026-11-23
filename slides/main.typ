@@ -562,57 +562,60 @@ Démo live (`02-sha512/`).
   Une phrase de passe de plusieurs mots aléatoires est plus facile à retenir et plus longue qu'un mot court avec des substitutions (P\@ssw0rd), donc plus résistante à la force brute.
 ]
 
-== 2.11 - Poivre
+== 2.11 - Poivre : où le stocker ?
 
-- Secret *commun*, jamais stocké avec la BDD
-- Stockage possible : secret manager (ex : Vault), variables d'environnement, code
-
-#v(0.3em)
-#align(center)[
-  #grid(
-    columns: (auto, auto, auto),
-    column-gutter: 1.2em,
-    align: horizon + center,
-    tbox[
-      #text(size: 0.6em, weight: "bold")[Base de données] \
-      #mono[hash + sel]
-    ],
-    text(size: 1.2em, weight: "black")[≠],
-    tbox(fill: dy-yellow)[
-      #text(size: 0.6em, weight: "bold")[Secret manager / env] \
-      #mono[poivre]
-    ],
-  )
-
-  #v(0.4em)
-  #mono(size: 0.8em)[hash(mot de passe + sel + poivre)]
-]
-
-== 2.12 - Poivre : exemple et rotation
-
-#set text(size: 0.85em)
-- Deux stratégies (OWASP) :
-  - *Avant* : poivre ajouté au mot de passe, avant le hash lent
-  - *Après* : hash normal, puis *HMAC* (vu plus tôt, poivre = clé) sur le hash
-- Un poivre ne se change pas sans connaître les mots de passe : s'il est compromis, il faut *forcer le reset* des comptes concernés
-- Piste : stocker une *version du poivre* à côté du hash
+- Secret *commun*, jamais stocké avec la BDD : une fuite de la seule BDD (injection SQL, sauvegarde) ne suffit plus à casser les hashs
+- Où le stocker ? Par ordre de préférence :
 
 #v(0.2em)
 #align(center)[
   #table(
-    columns: 4,
-    inset: 0.4em,
+    columns: 2,
+    inset: 0.35em,
     stroke: 1.5pt + black,
     fill: (_, y) => if y == 0 { dy-yellow } else { white },
     align: left,
-    [login], [hash (Argon2id + sel)], [HMAC(poivre)], [version],
-    mono[alice], mono[\$argon2id\$…], mono[9c1f…], mono[v1],
-    mono[bob], mono[\$argon2id\$…], mono[2b7e…], mono[v1],
+    [\#], [Emplacement du poivre],
+    [1], [*HSM / KMS* : la clé ne sort pas, c'est lui qui calcule le HMAC],
+    [2], [*Secret manager* (ex : Vault), lu au démarrage de l'application],
+    [3], [Variable d'environnement ou fichier injecté au déploiement],
+    [4], [Dans le code : à éviter (fuite du dépôt = fuite du poivre)],
   )
 ]
 
 #v(1fr)
-#text(size: 14pt)[Source : OWASP, #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[_Password Storage Cheat Sheet_] (Peppering)]
+#text(size: 14pt)[Sources : #link("https://pages.nist.gov/800-63-4/sp800-63b.html")[NIST SP 800-63B-4] (secret « SHOULD » en HSM/TEE), #link("https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html")[OWASP] (vault ou HSM)]
+
+== 2.12 - Poivre : quelle stratégie ?
+
+#set text(size: 0.8em)
+- Un poivre ne se change pas sans les mots de passe : on garde l'ancien le temps que chaque utilisateur se reconnecte
+
+#v(0.2em)
+#align(center)[
+  #table(
+    columns: 3,
+    inset: 0.35em,
+    stroke: 1.5pt + black,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
+    align: left,
+    [Stratégie], [Recommandée par], [Rotation],
+    [*Avant* : hash lent(HMAC(poivre, mdp))], [OWASP], [à la connexion],
+    [*Après* : HMAC(poivre, hash lent(mdp))], [OWASP, NIST], [à la connexion],
+    [*Chiffrer le hash* (clé en KMS/HSM)], [ParagonIE], [directe (rechiffrement)],
+  )
+]
+
+#v(0.2em)
+- Préférence : étape *après* le hash (NIST, OWASP), clé en HSM/KMS. Chiffrer le hash si on veut une rotation simple
+- Stocker une *version du poivre* à côté du hash
+
+#v(1fr)
+#text(size: 14pt)[Sources : OWASP (Peppering), NIST SP 800-63B-4, #link("https://paragonie.com/blog/2016/02/how-safely-store-password-in-2016")[ParagonIE]]
+
+#speaker-note[
+  La rotation « directe » du chiffrement du hash est ma déduction : on déchiffre avec l'ancienne clé et on rechiffre avec la nouvelle, sans connaître le mot de passe. À valider avant de l'affirmer.
+]
 
 == 2.13 - Comparaison en temps constant
 
