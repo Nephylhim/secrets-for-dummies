@@ -297,6 +297,37 @@ hash("Password") = dc647eb65e6711e155375218212b3964
 
 #speaker-note[Démo live : `01-md5`]
 
+== Les outils : hashcat et John the Ripper
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 1.5em,
+  [
+    *hashcat*
+    #set text(size: 0.8em)
+    - Casseur de hash « le plus rapide du monde »
+    - Exploite le *GPU* (milliards d'essais par seconde)
+    - Modes : dictionnaire (`-a 0`), règles de mutation (`-r`), force brute (`-a 3`)
+    - On choisit l'algo avec `-m` (ex : `-m 0` = MD5)
+  ],
+  [
+    *John the Ripper*
+    #set text(size: 0.8em)
+    - Le classique, né en 1996, historiquement orienté *CPU*
+    - Détecte souvent seul le format du hash
+    - Modes : dictionnaire (`--wordlist`), règles (`--rules`), incrémental
+    - Très pratique pour les fichiers (zip, ssh, etc.) via `*2john`
+  ],
+)
+
+#v(0.4em)
+#align(center)[
+  #mono(size: 0.8em)[hashcat -m 0 -a 0 md5.hash example.dict]
+]
+
+#v(1fr)
+#text(size: 14pt)[Sites : #link("https://hashcat.net/hashcat/")[hashcat.net], #link("https://www.openwall.com/john/")[openwall.com/john]]
+
 == Démo : MD5
 
 Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec hashcat.
@@ -318,6 +349,19 @@ Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec ha
   ..hline("SHA-256", "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"),
   ..hline("SHA-512", "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb9…"),
 )
+
+== MD5 et SHA : à quoi ça sert alors ?
+
+- Ils sont faits pour être *rapides* : parfait pour le reste, mauvais pour les mots de passe
+- *Intégrité* : vérifier qu'un fichier n'a pas été modifié ou corrompu (checksum d'un téléchargement)
+- *Identifiants de contenu* : Git identifie commits et fichiers par leur hash
+- *Signatures et certificats* : on signe le hash d'un document plutôt que le document entier
+- *Déduplication, caches, tables de hachage*
+
+#v(0.3em)
+#align(center)[
+  #mono(size: 0.8em)[sha256sum debian.iso → comparer avec le hash publié]
+]
 
 == Démo : SHA-512
 
@@ -357,11 +401,11 @@ Démo live (`02-sha512/`).
 ]
 
 #v(1fr)
-#text(size: 14pt)[Extrait simplifié (une vraie rainbow table stocke des chaînes de hash). Exemple de vraies tables : #link("https://ophcrack.sourceforge.io/tables.php")[ophcrack.sourceforge.io/tables.php]]
+#text(size: 14pt)[Extrait simplifié (une vraie rainbow table stocke des chaînes de hash). Exemple de vraies tables de mots de passe : #link("https://crackstation.net/")[crackstation.net]]
 
 == 2.6 - Sel
 
-- Valeur aléatoire *unique par utilisateur*, ajoutée avant le hash
+- Valeur aléatoire *unique par utilisateur*, qu'on *colle au mot de passe* (concaténation) avant de hasher : hash(sel + mot de passe)
 - Rend les rainbow tables inutilisables
 - Stocké à côté du hash
 

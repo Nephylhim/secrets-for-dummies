@@ -168,7 +168,7 @@
         show link: underline
         body
       },
-      alert: (self: none, it) => highlight(fill: dy-yellow, extent: 0.15em, it),
+      alert: (self: none, it) => highlight(fill: dy-yellow, extent: 0pt, it),
     ),
     config-colors(primary: dy-yellow, neutral-darkest: dy-black),
     ..args,
