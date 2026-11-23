@@ -365,39 +365,11 @@ Démo live (`01-md5/`) : hash d'une liste de mots de passe, puis cassage avec ha
 
 Démo live (`02-sha512/`).
 
-== 2.4 - Combien de hashs par seconde ?
-
-- Mesures hashcat sur *un seul GPU grand public* (RTX 4090), par algorithme :
-
-#v(0.3em)
-#align(center)[
-  #table(
-    columns: 2,
-    inset: 0.4em,
-    stroke: 1.5pt + black,
-    fill: (_, y) => if y == 0 { dy-yellow } else { white },
-    align: left,
-    [Algorithme], [Essais par seconde],
-    [MD5], [164,1 milliards],
-    [SHA-256], [22,0 milliards],
-    [SHA-512], [7,5 milliards],
-    [PBKDF2-HMAC-SHA256 (999 itérations)], [8,9 millions],
-    [PBKDF2-HMAC-SHA512 (999 itérations)], [3,1 millions],
-    [bcrypt (coût 5)], [184 000],
-  )
-]
-
-#v(0.2em)
-#text(size: 0.7em)[Plus c'est lent pour l'attaquant, mieux c'est : on passe de 164 milliards à 184 000 essais par seconde.]
-
-#v(1fr)
-#text(size: 14pt)[Source : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6, RTX 4090]]
-
 == 2.4 - HMAC
 
 - *HMAC(clé, message)* : un hash qui mélange le message avec une *clé secrète*
 - Même clé + même message → même résultat (fonction pure), mais sans la clé, impossible de le recalculer
-- Sert de brique à *PBKDF2* (qui répète un HMAC) et au *poivre* (le poivre est la clé)
+- Sert de brique à *PBKDF2* (qui répète un HMAC des milliers de fois)
 
 #v(0.3em)
 #align(center)[
@@ -425,12 +397,44 @@ Démo live (`02-sha512/`).
 #v(0.4em)
 #align(center)[
   #tbox(fill: white)[
-    #mono(size: 0.9em)[PBKDF2-HMAC-SHA512(mot de passe, 600 000 itérations)]
+    #mono(size: 0.9em)[PBKDF2-HMAC-SHA512(mot de passe, 220 000 itérations)]
   ]
 ]
 
 #v(0.4em)
-- Côté attaquant : on passe aux *rainbow tables*
+- D'autres algos de hash lent : *bcrypt*, puis *Argon2id* (recommandé aujourd'hui)
+
+#speaker-note[
+  220 000 itérations = valeur OWASP pour PBKDF2-HMAC-SHA512 (600 000 pour PBKDF2-HMAC-SHA256).
+]
+
+== 2.4 - Combien de hashs par seconde ?
+
+- Mesures hashcat sur *un seul GPU grand public* (RTX 4090), par algorithme :
+
+#v(0.3em)
+#align(center)[
+  #table(
+    columns: (auto, auto),
+    inset: 0.35em,
+    stroke: 1.5pt + black,
+    fill: (_, y) => if y == 0 { dy-yellow } else { white },
+    align: left,
+    [Algorithme], [Essais par seconde],
+    [MD5], [164,1 milliards],
+    [SHA-256], [22,0 milliards],
+    [SHA-512], [7,5 milliards],
+    [PBKDF2-SHA512 (220 000 it.)], [≈ 14 000],
+    [bcrypt (coût 5)], [184 000],
+    [Argon2id], [non mesuré (mémoire élevée : GPU peu efficace)],
+  )
+]
+
+#v(0.2em)
+#text(size: 0.65em)[PBKDF2 : mesuré à 999 itérations (3,1 M/s), ramené à 220 000 itérations (÷ 220). Plus c'est lent pour l'attaquant, mieux c'est.]
+
+#v(1fr)
+#text(size: 14pt)[Source : #link("https://gist.github.com/Chick3nman/32e662a5bb63bc4f51b847bb422222fd")[benchmark hashcat v6.2.6, RTX 4090]]
 
 == 2.5 - Attaque : les rainbow tables
 
@@ -450,7 +454,11 @@ Démo live (`02-sha512/`).
 ]
 
 #v(1fr)
-#text(size: 14pt)[Extrait simplifié (une vraie rainbow table stocke des chaînes de hash). Exemple de vraies tables de mots de passe : #link("https://crackstation.net/")[crackstation.net]]
+#text(size: 14pt)[Extrait simplifié (une vraie rainbow table stocke des chaînes de hash). Exemple de vraies tables : #link("https://freerainbowtables.com/")[freerainbowtables.com]]
+
+#speaker-note[
+  Pour aller plus loin : #link("https://crackstation.net/hashing-security.htm")[crackstation.net/hashing-security.htm]
+]
 
 == 2.6 - Sel
 
@@ -572,7 +580,7 @@ Démo live (`02-sha512/`).
 #set text(size: 0.85em)
 - Deux stratégies (OWASP) :
   - *Avant* : poivre ajouté au mot de passe, avant le hash lent
-  - *Après* : hash normal, puis *HMAC* (poivre = clé) sur le hash
+  - *Après* : hash normal, puis *HMAC* (vu plus tôt, poivre = clé) sur le hash
 - Un poivre ne se change pas sans connaître les mots de passe : s'il est compromis, il faut *forcer le reset* des comptes concernés
 - Piste : stocker une *version du poivre* à côté du hash
 
