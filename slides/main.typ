@@ -6,7 +6,7 @@
   config-info(
     title: [Secrets pour les nuls],
     subtitle: [Protéger des mots de passe, pas à pas],
-    author: [Thomas Coussot],
+    author: [Thomas Coussot - Gabrielle Seng],
   ),
   ..if "notes" in sys.inputs { (config-common(show-notes-on-second-screen: right),) } else { () },
 )
@@ -39,19 +39,29 @@
 == Disclaimer
 
 #side("1F6A7")[
-  - Je ne suis *pas* un professionnel de la sécurité
-  - Je suis développeur
+  - Nous ne sommes *pas* des professionnels de la sécurité
+  - Nous sommes développeurs
   - Ce que vous allez voir : une démarche pédagogique, pas un audit
 ]
 
 == Whoami
 
-#side("1F9D1-200D-1F4BB")[
-  *Thomas Coussot*
+#grid(
+  columns: (1fr, auto),
+  column-gutter: 1.5em,
+  align: horizon,
+  [
+    *Thomas Coussot*
 
-  - Tech lead @ Accenture
-  - Chouchoute des produits, du besoin métier jusqu'au run (quand c'est possible)
-]
+    - Tech lead @ Accenture
+    - Chouchoute des produits, du besoin métier jusqu'au run (quand c'est possible)
+
+    *Gabrielle Seng*
+
+    - Étudiante en L3 informatique à l'UBO en reprise d'étude
+  ],
+  image("rsc/nous.jpg", height: 12em),
+)
 
 = 0 - Intro
 
